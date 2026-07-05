@@ -1,6 +1,6 @@
 import { getDocumentQuestions } from "../data/rulesEngine";
 
-export default function IntakeForm({ goalId, answers, onAnswer, onSubmit, canSubmit }) {
+export default function IntakeForm({ goalId, answers, onAnswer, onSubmit, canSubmit, isGenerating }) {
   const questions = getDocumentQuestions(goalId);
 
   return (
@@ -55,7 +55,7 @@ export default function IntakeForm({ goalId, answers, onAnswer, onSubmit, canSub
 
       <button
         onClick={onSubmit}
-        disabled={!canSubmit}
+        disabled={!canSubmit || isGenerating}
         aria-label={
           canSubmit
             ? "Generate pathway"
@@ -64,12 +64,12 @@ export default function IntakeForm({ goalId, answers, onAnswer, onSubmit, canSub
         className={`mt-7 px-5 py-2.5 rounded-md font-medium text-sm tracking-wide transition-all
           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold
           ${
-            canSubmit
+            canSubmit && !isGenerating
               ? "bg-ink text-white hover:bg-[#0f1730]"
               : "bg-rule text-ink-soft/60 cursor-not-allowed"
           }`}
       >
-        Generate Pathway →
+        {isGenerating ? "Generating…" : "Generate Pathway →"}
       </button>
     </div>
   );

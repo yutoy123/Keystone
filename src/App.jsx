@@ -20,6 +20,7 @@ function App() {
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [caseNumber, setCaseNumber] = useState(() => generateCaseNumber());
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAnswer = (questionId, value) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -44,15 +45,19 @@ function App() {
     getDocumentQuestions(selectedGoal).every((q) => answers[q.id]);
 
   const handleSubmit = () => {
-    if (selectedGoal === "shelter") {
-      setResult(evaluateShelterPath(answers));
-    } else if (selectedGoal === "bank") {
-      setResult(evaluateBankPath(answers));
-    } else if (selectedGoal === "school") {
-      setResult(evaluateSchoolPath(answers));
-    } else if (selectedGoal === "housing") {
-      setResult(evaluateHousingPath(answers));
-    }
+    setIsGenerating(true);
+    setTimeout(() => {
+      if (selectedGoal === "shelter") {
+        setResult(evaluateShelterPath(answers));
+      } else if (selectedGoal === "bank") {
+        setResult(evaluateBankPath(answers));
+      } else if (selectedGoal === "school") {
+        setResult(evaluateSchoolPath(answers));
+      } else if (selectedGoal === "housing") {
+        setResult(evaluateHousingPath(answers));
+      }
+      setIsGenerating(false);
+    }, 450);
   };
 
   const goalLabel =
@@ -121,6 +126,7 @@ function App() {
                 onAnswer={handleAnswer}
                 onSubmit={handleSubmit}
                 canSubmit={canSubmit}
+                isGenerating={isGenerating}
               />
             </div>
           )}

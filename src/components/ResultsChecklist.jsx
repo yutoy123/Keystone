@@ -11,6 +11,7 @@ export default function ResultsChecklist({
   if (!result) return null;
 
   const isDeadlock = result.deadlock;
+  const isUnresolved = result.summaryTitle === "Unable to determine pathway";
 
   const handleCopySms = async () => {
     const text = buildClientSmsText({ result, goalLabel });
@@ -37,10 +38,14 @@ export default function ResultsChecklist({
           role="status"
           aria-live="polite"
           className={`stamp stamp-animate flex-shrink-0 text-xs ${
-            isDeadlock ? "text-brick" : "text-teal"
+            isUnresolved ? "text-ink-soft" : isDeadlock ? "text-brick" : "text-teal"
           }`}
         >
-          {isDeadlock ? "Deadlock Detected" : "Pathway Clear"}
+          {isUnresolved
+            ? "Incomplete"
+            : isDeadlock
+            ? "Deadlock Detected"
+            : "Pathway Clear"}
         </div>
       </div>
 
