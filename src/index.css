@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #182241;
+  --color-ink-soft: #5b6478;
+  --color-paper: #eff1ee;
+  --color-panel: #ffffff;
+  --color-rule: #d8dce2;
+  --color-gold: #c98a2b;
+  --color-gold-soft: #f3e4c8;
+  --color-brick: #9b3226;
+  --color-brick-soft: #f2ded9;
+  --color-teal: #3e6459;
+  --color-teal-soft: #dde9e5;
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    font-family: var(--font-body);
+    color: var(--color-ink);
+  }
+}
+
+/* Ink-stamp effect: rotated, textured, slightly imperfect border to read as "stamped" not "printed" */
+.stamp {
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  padding: 0.4rem 1rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-block;
+  transform: rotate(-3deg);
+  position: relative;
+}
+
+.stamp::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  opacity: 0.4;
+}
+
+@keyframes stamp-land {
+  0% {
+    opacity: 0;
+    transform: rotate(-3deg) scale(1.4);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-3deg) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+.stamp-animate {
+  animation: stamp-land 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-animate {
+    animation: none;
+  }
+}
