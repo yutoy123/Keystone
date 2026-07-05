@@ -22,7 +22,7 @@ export const GOALS = [
   {
     id: "housing",
     label: "Renting an Apartment",
-    available: false,
+    available: true,
   },
 ];
 
@@ -104,6 +104,31 @@ export const DOCUMENT_QUESTIONS = {
       options: [
         { value: "yes", label: "Yes, I can attest to this" },
         { value: "no", label: "No established relationship yet" },
+      ],
+    },
+  ],
+  housing: [
+    ID_QUESTION,
+    {
+      id: "hasIncomeProof",
+      label:
+        "Does the client have proof of income (pay stubs, offer letter, bank statements) or a housing subsidy/voucher?",
+      options: [
+        { value: "yes", label: "Yes — income documentation available" },
+        {
+          value: "voucher",
+          label: "Has a Housing Choice Voucher (Section 8) or similar subsidy",
+        },
+        { value: "no", label: "No proof of income available" },
+      ],
+    },
+    {
+      id: "hasSsnOrItin",
+      label: "Can the client provide an SSN or ITIN for a credit/background check?",
+      options: [
+        { value: "ssn", label: "Yes — Social Security Number (SSN)" },
+        { value: "itin", label: "ITIN only (no SSN)" },
+        { value: "none", label: "Cannot / prefers not to provide" },
       ],
     },
   ],
@@ -487,6 +512,171 @@ export function evaluateSchoolPath(answers) {
       ],
       citation:
         "McKinney-Vento Homeless Assistance Act, 42 U.S.C. §11432(g)(3)(C); 42 U.S.C. §11432(g)(1)(H)",
+    };
+  }
+
+  return {
+    deadlock: false,
+    needsLetter: false,
+    summaryTitle: "Unable to determine pathway",
+    steps: [
+      {
+        title: "Insufficient information",
+        detail: "Please answer all questions to generate a pathway.",
+      },
+    ],
+    citation: "",
+  };
+}
+
+
+// Core decision tree for the "housing" goal — CA-specific tenant protections.
+// Unlike shelter/school, there is no federal mandate forcing a private
+// landlord to rent regardless of documentation — the strongest protections
+// here are California-specific: source-of-income anti-discrimination and
+// a bar on landlords inquiring about immigration status.
+export function evaluateHousingPath(answers) {
+  const { hasId, hasIncomeProof, hasSsnOrItin } = answers;
+
+  // Case 1: Voucher/subsidy — source-of-income protection applies regardless
+  if (hasIncomeProof === "voucher") {
+    return {
+      deadlock: false,
+      needsLetter: hasId === "none",
+      summaryTitle: "Housing Choice Voucher — Source-of-Income Protection Applies",
+      steps: [
+        {
+          title: "Cite source-of-income protection if a landlord refuses the voucher",
+          detail:
+            "California law (Gov. Code §12955, added by SB 329) prohibits landlords from refusing to rent to an applicant because they use a Housing Choice Voucher (Section 8) or other lawful source of income. This is illegal discrimination, not landlord discretion.",
+        },
+        {
+          title:
+            hasId === "none"
+              ? "Obtain a government ID in parallel"
+              : "Bring current ID to the application",
+          detail:
+            hasId === "none"
+              ? "Most landlords and voucher programs still require photo ID for the lease itself. Pursue a state ID at the DMV while the voucher search continues — a caseworker letter (generated below) can support a fee waiver."
+              : "Standard or expired ID should be brought to the application; renew an expired ID at the DMV if the landlord requires current identification.",
+        },
+        {
+          title: "Contact the local Public Housing Authority (PHA)",
+          detail:
+            "The PHA administering the voucher can provide a list of participating landlords and can intervene if source-of-income discrimination is suspected.",
+        },
+      ],
+      citation:
+        "California Government Code §12955 (Fair Employment and Housing Act, as amended by SB 329)",
+    };
+  }
+
+  // Case 2: Full standard path — ID, income proof, and SSN/ITIN all available
+  if (
+    (hasId === "valid" || hasId === "expired") &&
+    hasIncomeProof === "yes" &&
+    hasSsnOrItin !== "none"
+  ) {
+    return {
+      deadlock: false,
+      needsLetter: false,
+      summaryTitle:
+        hasId === "valid"
+          ? "Standard Rental Application Path"
+          : "Expired ID — Renew Before Applying",
+      steps: [
+        {
+          title:
+            hasId === "valid"
+              ? "Bring current ID and proof of income to the application"
+              : "Renew ID at the DMV before applying",
+          detail:
+            hasId === "valid"
+              ? "Most landlords require a government photo ID, recent pay stubs or an offer letter showing income of roughly 2.5–3x monthly rent, and consent to a credit/background check."
+              : "Most landlords require current, unexpired photo ID. Renew at the DMV — this typically does not require a fee waiver unless the client is also experiencing homelessness.",
+        },
+        {
+          title: "Provide income documentation",
+          detail:
+            "Pay stubs, an employer offer letter, or 2–3 months of bank statements typically satisfy income verification requirements.",
+        },
+        {
+          title:
+            hasSsnOrItin === "ssn"
+              ? "Provide SSN for the credit/background check"
+              : "Provide ITIN for the credit/background check",
+          detail:
+            hasSsnOrItin === "ssn"
+              ? "Most landlords use the SSN to run a credit and background check as part of standard tenant screening."
+              : "Many landlords and screening services can run a background check using an ITIN in place of an SSN — confirm with the specific property management company or landlord.",
+        },
+      ],
+      citation:
+        "Standard landlord tenant-screening practice; California Civil Code §1950.5 (security deposit limits)",
+    };
+  }
+
+  // Case 3: Cannot/prefers not to provide SSN/ITIN — often immigration-status related
+  if (hasId !== "none" && hasSsnOrItin === "none") {
+    return {
+      deadlock: false,
+      needsLetter: true,
+      summaryTitle: "No SSN/ITIN Provided — Immigration Status Protections Apply",
+      steps: [
+        {
+          title: "Landlords cannot require disclosure of immigration status",
+          detail:
+            "California Civil Code §1940.3 prohibits landlords from making inquiries about a tenant's immigration or citizenship status, and voids any lease clause requiring such disclosure. A landlord cannot deny tenancy solely because an applicant declines to provide an SSN for this reason.",
+        },
+        {
+          title: "Offer alternative verification",
+          detail:
+            "Provide the government ID already on hand and income documentation. Applying for an ITIN via IRS Form W-7 can help for future use — but it is not legally required to rent in California.",
+        },
+        {
+          title: "Generate a Caseworker Identity/Income Verification Letter",
+          detail:
+            "If a landlord is unfamiliar with these protections or requests additional assurance, this letter can support the application by verifying identity and current circumstances without disclosing immigration status.",
+        },
+      ],
+      citation: "California Civil Code §1940.3",
+    };
+  }
+
+  // Case 4: No ID, no income proof, no SSN/ITIN — core deadlock
+  if (
+    hasId === "none" &&
+    hasIncomeProof === "no" &&
+    hasSsnOrItin === "none"
+  ) {
+    return {
+      deadlock: true,
+      needsLetter: true,
+      summaryTitle: "Deadlock Detected — No ID, Income Proof, or SSN/ITIN",
+      steps: [
+        {
+          title: "Pursue a guarantor or co-signer",
+          detail:
+            "Without independent income proof or standard ID, a qualified guarantor or co-signer who meets income/credit requirements can often satisfy a landlord's screening in place of the applicant's own documentation.",
+        },
+        {
+          title: "Look for supportive or transitional housing programs",
+          detail:
+            "Programs funded through HUD Continuum of Care or local homeless services often place clients directly, bypassing standard private-market screening entirely while other documents are obtained.",
+        },
+        {
+          title: "Obtain a California state ID in parallel",
+          detail:
+            "Apply for a state ID at the DMV; a caseworker letter (generated below) can support a fee waiver under CA Vehicle Code §14902 if the client is experiencing homelessness.",
+        },
+        {
+          title: "Generate a Caseworker Identity Verification Letter",
+          detail:
+            "This letter can support both the DMV ID application and give a landlord or guarantor program written assurance of the applicant's identity and circumstances.",
+        },
+      ],
+      citation:
+        "HUD Continuum of Care program guidelines; California Vehicle Code §14902",
     };
   }
 

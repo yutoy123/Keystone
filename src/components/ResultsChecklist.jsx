@@ -34,6 +34,8 @@ export default function ResultsChecklist({
           {result.summaryTitle}
         </h2>
         <div
+          role="status"
+          aria-live="polite"
           className={`stamp stamp-animate flex-shrink-0 text-xs ${
             isDeadlock ? "text-brick" : "text-teal"
           }`}
@@ -53,7 +55,10 @@ export default function ResultsChecklist({
       <ol className="relative border-l-2 border-rule ml-2.5 space-y-6">
         {result.steps.map((step, i) => (
           <li key={i} className="relative pl-6">
-            <span className="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full bg-ink border-2 border-panel" />
+            <span
+              className="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full bg-ink border-2 border-panel"
+              aria-hidden="true"
+            />
             <p className="font-medium text-ink text-sm">{step.title}</p>
             <p className="text-sm text-ink-soft mt-1 leading-relaxed">
               {step.detail}
@@ -72,20 +77,24 @@ export default function ResultsChecklist({
         {result.needsLetter && (
           <button
             onClick={onGenerateLetter}
-            className="px-4 py-2.5 rounded-md bg-gold text-white text-sm font-medium tracking-wide hover:brightness-95 transition-all shadow-sm"
+            className="px-4 py-2.5 rounded-md bg-gold text-white text-sm font-medium tracking-wide hover:brightness-95 transition-all shadow-sm
+              focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Generate Caseworker Letter
           </button>
         )}
         <button
           onClick={onGenerateClientSummary}
-          className="px-4 py-2.5 rounded-md border border-rule text-ink-soft text-sm font-medium hover:border-ink-soft transition-all"
+          className="px-4 py-2.5 rounded-md border border-rule text-ink-soft text-sm font-medium hover:border-ink-soft transition-all
+            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           Download Client Pathway (PDF)
         </button>
         <button
           onClick={handleCopySms}
-          className="px-4 py-2.5 rounded-md border border-rule text-ink-soft text-sm font-medium hover:border-ink-soft transition-all"
+          aria-live="polite"
+          className="px-4 py-2.5 rounded-md border border-rule text-ink-soft text-sm font-medium hover:border-ink-soft transition-all
+            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           {copied ? "Copied ✓" : "Copy as Text Message"}
         </button>

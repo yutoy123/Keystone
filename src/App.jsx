@@ -2,8 +2,8 @@ import { useState } from "react";
 import GoalSelector from "./components/GoalSelector";
 import IntakeForm from "./components/IntakeForm";
 import ResultsChecklist from "./components/ResultsChecklist";
-import { evaluateShelterPath, evaluateBankPath, evaluateSchoolPath, getDocumentQuestions, GOALS } from "./data/rulesEngine";
-import { generateCaseworkerLetter } from "./utils/generateLetter";
+import ProgressSteps from "./components/ProgressSteps";
+import { evaluateShelterPath, evaluateBankPath, evaluateSchoolPath, evaluateHousingPath, getDocumentQuestions, GOALS } from "./data/rulesEngine";import { generateCaseworkerLetter } from "./utils/generateLetter";
 import { generateClientSummary } from "./utils/generateClientSummary";
 
 function generateCaseNumber() {
@@ -50,6 +50,8 @@ function App() {
       setResult(evaluateBankPath(answers));
     } else if (selectedGoal === "school") {
       setResult(evaluateSchoolPath(answers));
+    } else if (selectedGoal === "housing") {
+      setResult(evaluateHousingPath(answers));
     }
   };
 
@@ -96,6 +98,7 @@ function App() {
 
       <main className="max-w-3xl mx-auto px-6 py-10">
         <div className="bg-panel rounded-md border border-rule shadow-sm">
+          <ProgressSteps selectedGoal={selectedGoal} result={result} />
           <div className="p-7">
             <div className="mb-6">
               <h2 className="font-display text-base font-medium text-ink mb-1.5">

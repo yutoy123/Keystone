@@ -16,7 +16,11 @@ export default function GoalSelector({ selectedGoal, onSelect }) {
       <h2 className="font-display text-xl font-semibold text-ink mb-4">
         What is the client trying to accomplish?
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+        role="group"
+        aria-label="Select client goal"
+      >
         {GOALS.map((goal) => {
           const isSelected = selectedGoal === goal.id;
           return (
@@ -24,7 +28,14 @@ export default function GoalSelector({ selectedGoal, onSelect }) {
               key={goal.id}
               disabled={!goal.available}
               onClick={() => goal.available && onSelect(goal.id)}
+              aria-pressed={isSelected}
+              aria-label={
+                goal.available
+                  ? `${goal.label}${isSelected ? " (currently selected)" : ""}`
+                  : `${goal.label} (coming soon, not yet available)`
+              }
               className={`relative text-left px-4 py-3.5 rounded-md border transition-all
+                focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold
                 ${
                   isSelected
                     ? "border-ink bg-ink text-white shadow-md"
